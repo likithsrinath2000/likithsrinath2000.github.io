@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Likith Srinath · Observability Engineer</title>
+  <meta name="description" content="Likith Srinath · Software Engineer in Observability (Logs & Events), ex-SRE. Building reliable, well-instrumented systems." />
+  <meta name="author" content="Likith Srinath" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Likith Srinath · Observability Engineer" />
+  <meta property="og:description" content="Software Engineer in Observability (Logs & Events), ex-SRE." />
+  <meta property="og:type" content="website" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%A1%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+  <!-- Live log-stream canvas backdrop -->
+  <canvas id="log-stream" aria-hidden="true"></canvas>
+  <div class="scanline" aria-hidden="true"></div>
+
+  <!-- Nav -->
+  <header class="nav">
+    <a class="brand" href="#top">
+      <span class="brand-dot"></span>
+      <span class="brand-text">likith<span class="accent">.o11y</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#about">About</a>
+      <a href="#experience">Experience</a>
+      <a href="#focus">Focus</a>
+      <a href="#stack">Stack</a>
+      <a href="#work">Work</a>
+      <a href="#contact" class="nav-cta">Contact</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <div class="status-pill">
+          <span class="pulse-dot"></span>
+          <span>SLO: 99.99% &nbsp;·&nbsp; error budget healthy</span>
+        </div>
+        <h1 class="hero-title">
+          Likith <span class="accent">Srinath</span>
+        </h1>
+        <p class="hero-role">
+          <span class="type-line" id="typewriter"></span><span class="caret">▌</span>
+        </p>
+        <p class="hero-sub">
+          I make systems <strong>observable</strong> and <strong>reliable</strong>, turning
+          floods of <span class="tag tag-log">logs</span> and <span class="tag tag-event">events</span>
+          into signal you can act on. Ex-SRE, now Senior Software Engineer in the Observability domain
+          <span class="at">@ LinkedIn</span>.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#work">View work</a>
+          <a class="btn btn-ghost" href="https://github.com/likithsrinath2000" target="_blank" rel="noopener">GitHub ↗</a>
+        </div>
+      </div>
+
+      <!-- Live pipeline visualization -->
+      <div class="pipeline-wrap" aria-hidden="true">
+        <canvas id="pipeline"></canvas>
+        <div class="pipeline-label">event pipeline · live</div>
+      </div>
+
+      <!-- Live throughput ticker -->
+      <div class="metrics-bar" aria-hidden="true">
+        <div class="metric"><span class="m-label">ingest</span><span class="m-val" id="m-ingest">0</span><span class="m-unit">events/s</span></div>
+        <div class="metric"><span class="m-label">p99 latency</span><span class="m-val" id="m-latency">0</span><span class="m-unit">ms</span></div>
+        <div class="metric"><span class="m-label">log volume</span><span class="m-val" id="m-volume">0</span><span class="m-unit">GB/day</span></div>
+        <div class="metric"><span class="m-label">errors</span><span class="m-val" id="m-errors">0.00</span><span class="m-unit">%</span></div>
+        <canvas id="sparkline" class="sparkline"></canvas>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="section">
+      <div class="section-head">
+        <span class="section-index">01</span>
+        <h2>From firefighting to foresight</h2>
+      </div>
+      <div class="about-grid">
+        <div class="about-copy">
+          <p>
+            I started out as a <strong>Site Reliability Engineer</strong>, on the receiving end of
+            pages at 3 AM, chasing cascading failures, tuning SLOs, and learning that
+            <em>you can't fix what you can't see</em>.
+          </p>
+          <p>
+            That lesson pulled me into <strong>Observability</strong>. Today I build the systems
+            that make other engineers' systems legible: high-throughput
+            <span class="tag tag-log">log</span> pipelines and
+            <span class="tag tag-event">event</span> platforms that stay fast, cheap, and
+            trustworthy at scale.
+          </p>
+          <p class="quiet">
+            Reliability isn't a team; it's a property you engineer in. Observability is how you
+            prove it.
+          </p>
+        </div>
+        <ul class="timeline">
+          <li>
+            <span class="t-dot"></span>
+            <div><h4>Site Reliability Engineer</h4><p>SLOs, incident response, capacity, resilience <span class="at">@ LinkedIn</span>.</p></div>
+          </li>
+          <li>
+            <span class="t-dot"></span>
+            <div><h4>Software Engineer</h4><p>Full-stack + DevOps tooling for global cloud networks.</p></div>
+          </li>
+          <li>
+            <span class="t-dot t-active"></span>
+            <div><h4>Senior Software Engineer · Observability</h4><p>Logs &amp; Events platforms at scale <span class="at">@ LinkedIn</span>.</p></div>
+          </li>
+          <li>
+            <span class="t-dot t-future"></span>
+            <div><h4>Next</h4><p>Cheaper, smarter telemetry: signal without the noise.</p></div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE : log explorer -->
+    <section id="experience" class="section">
+      <div class="section-head">
+        <span class="section-index">02</span>
+        <h2>Career log <span class="head-sub">// grep -r "likith" ./experience</span></h2>
+      </div>
+
+      <div class="explorer">
+        <!-- KQL query bar -->
+        <div class="query-bar">
+          <div class="query-dots"><span></span><span></span><span></span></div>
+          <div class="query-title">career.kql · Azure Data Explorer</div>
+        </div>
+        <pre class="kql" id="kql"><span class="k-tbl">CareerLog</span>
+<span class="k-op">|</span> <span class="k-kw">where</span> engineer <span class="k-eq">==</span> <span class="k-str">"likith.srinath"</span><span class="k-flt" id="kql-filter"></span>
+<span class="k-op">|</span> <span class="k-kw">order by</span> ts <span class="k-kw">desc</span></pre>
+
+        <!-- filter chips -->
+        <div class="filters" id="filters">
+          <button class="filter active" data-f="all">all</button>
+          <button class="filter" data-f="current">current</button>
+          <button class="filter" data-f="observability">observability</button>
+          <button class="filter" data-f="linkedin">linkedin</button>
+          <button class="filter" data-f="fulltime">full-time</button>
+          <button class="filter" data-f="internship">internships</button>
+        </div>
+
+        <!-- tenure histogram -->
+        <div class="histo-wrap">
+          <span class="histo-label">tenure<br><span class="histo-axis">older → newer</span></span>
+          <div class="histo" id="histo"></div>
+        </div>
+
+        <!-- results header -->
+        <div class="log-head">
+          <span class="lh-ts">timestamp</span>
+          <span class="lh-lvl">level</span>
+          <span class="lh-svc">service</span>
+          <span class="lh-msg">message</span>
+        </div>
+
+        <!-- log rows injected here -->
+        <div class="log-rows" id="log-rows"></div>
+
+        <!-- query stats -->
+        <div class="query-stats" id="query-stats"></div>
+      </div>
+
+      <!-- education strip -->
+      <div class="edu-strip">
+        <span class="edu-key">EDU</span>
+        <span class="edu-item"><strong>B.E. Computer Engineering</strong> · BMS Institute of Technology &amp; Management · 2022</span>
+        <span class="edu-item">Venkat International Public School</span>
+      </div>
+    </section>
+
+    <!-- FOCUS -->
+    <section id="focus" class="section">
+      <div class="section-head">
+        <span class="section-index">03</span>
+        <h2>What I obsess over</h2>
+      </div>
+      <div class="cards">
+        <article class="card card-log">
+          <div class="card-viz" id="viz-logs"></div>
+          <h3>Logs</h3>
+          <p>Structured, high-cardinality log pipelines: ingestion, parsing, indexing and query
+             that survive burst traffic without dropping a line.</p>
+          <ul class="chips"><li>ingestion</li><li>parsing</li><li>indexing</li><li>retention</li></ul>
+        </article>
+        <article class="card card-event">
+          <div class="card-viz" id="viz-events"></div>
+          <h3>Events</h3>
+          <p>Event streams as a first-class signal: schematized, ordered, replayable, and joined
+             with logs to reconstruct exactly what happened.</p>
+          <ul class="chips"><li>streaming</li><li>schemas</li><li>enrichment</li><li>replay</li></ul>
+        </article>
+        <article class="card card-rel">
+          <div class="card-viz" id="viz-rel"></div>
+          <h3>Reliability</h3>
+          <p>SLOs, error budgets and alerting that pages on symptoms, not noise. The SRE
+             instincts I never left behind.</p>
+          <ul class="chips"><li>SLOs</li><li>alerting</li><li>incident</li><li>capacity</li></ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- STACK -->
+    <section id="stack" class="section">
+      <div class="section-head">
+        <span class="section-index">04</span>
+        <h2>Tools of the trade</h2>
+      </div>
+      <div class="stack-grid" id="stack-grid"></div>
+    </section>
+
+    <!-- WORK -->
+    <section id="work" class="section">
+      <div class="section-head">
+        <span class="section-index">05</span>
+        <h2>Selected work</h2>
+      </div>
+      <div class="work-grid" id="work-grid"></div>
+      <p class="work-more">
+        More on <a href="https://github.com/likithsrinath2000?tab=repositories" target="_blank" rel="noopener">GitHub ↗</a>
+      </p>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section contact">
+      <div class="section-head">
+        <span class="section-index">06</span>
+        <h2>Let's talk telemetry</h2>
+      </div>
+      <p class="contact-copy">
+        Building something that needs to stay up and stay observable? I'm always up for a
+        conversation about logs, events, and reliability at scale.
+      </p>
+      <div class="contact-links">
+        <a class="clink" href="mailto:likithsrinath2000@gmail.com">
+          <span class="clink-k">email</span><span class="clink-v">likithsrinath2000@gmail.com</span>
+        </a>
+        <a class="clink" href="https://github.com/likithsrinath2000" target="_blank" rel="noopener">
+          <span class="clink-k">github</span><span class="clink-v">@likithsrinath2000</span>
+        </a>
+        <a class="clink" href="https://www.linkedin.com/in/likithsrinath2000" target="_blank" rel="noopener">
+          <span class="clink-k">linkedin</span><span class="clink-v">/in/likithsrinath2000</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>© <span id="year"></span> Likith Srinath · Bangalore</span>
+    <span class="foot-status"><span class="pulse-dot"></span> all systems operational</span>
+  </footer>
+
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>

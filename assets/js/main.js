@@ -1,0 +1,531 @@
+/* =========================================================
+   Likith Srinath · Observability portfolio
+   Vanilla JS canvas animations. No dependencies.
+   ========================================================= */
+(() => {
+  'use strict';
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (id) => document.getElementById(id);
+
+  /* ---------- Year ---------- */
+  $('year').textContent = new Date().getFullYear();
+
+  /* ---------- Typewriter role ---------- */
+  (() => {
+    const el = $('typewriter');
+    if (!el) return;
+    const phrases = [
+      'Observability Engineer',
+      'Logs & Events @ scale',
+      'ex-SRE, forever reliable',
+      'signal > noise',
+    ];
+    if (reduced) { el.textContent = phrases[0]; return; }
+    let p = 0, i = 0, deleting = false;
+    const tick = () => {
+      const full = phrases[p];
+      el.textContent = full.slice(0, i);
+      if (!deleting && i < full.length) { i++; setTimeout(tick, 55); }
+      else if (!deleting && i === full.length) { deleting = true; setTimeout(tick, 1600); }
+      else if (deleting && i > 0) { i--; setTimeout(tick, 28); }
+      else { deleting = false; p = (p + 1) % phrases.length; setTimeout(tick, 350); }
+    };
+    tick();
+  })();
+
+  /* ---------- Helper: hi-dpi canvas sizing ---------- */
+  const fit = (canvas) => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const r = canvas.getBoundingClientRect();
+    canvas.width = Math.max(1, r.width * dpr);
+    canvas.height = Math.max(1, r.height * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, w: r.width, h: r.height };
+  };
+
+  /* ---------- Background log stream ---------- */
+  (() => {
+    const canvas = $('log-stream');
+    if (!canvas || reduced) return;
+    let ctx, w, h, cols, drops;
+    const LEVELS = [
+      { t: 'INFO ', c: '#4ade80', p: 0.62 },
+      { t: 'DEBUG', c: '#38bdf8', p: 0.2 },
+      { t: 'WARN ', c: '#fbbf24', p: 0.13 },
+      { t: 'ERROR', c: '#f87171', p: 0.05 },
+    ];
+    const SVC = ['auth', 'ingest', 'router', 'query', 'kafka', 'index', 'api-gw', 'cache'];
+    const MSG = ['request handled', 'flush batch', 'ack offset', 'retry backoff',
+      'gc pause', 'shard rebalance', 'span exported', 'rate limited',
+      'connection reset', 'cache miss', 'schema validated', 'segment sealed'];
+    const rnd = (a) => a[(Math.random() * a.length) | 0];
+    const pickLevel = () => {
+      let r = Math.random();
+      for (const l of LEVELS) { if ((r -= l.p) <= 0) return l; }
+      return LEVELS[0];
+    };
+    const line = () => {
+      const l = pickLevel();
+      const ts = new Date().toISOString().slice(11, 23);
+      return { c: l.c, s: `${ts} ${l.t} [${rnd(SVC)}] ${rnd(MSG)}` };
+    };
+    const setup = () => {
+      const d = fit(canvas); ctx = d.ctx; w = d.w; h = d.h;
+      const fontH = 15, colW = 250;
+      cols = Math.ceil(w / colW);
+      drops = Array.from({ length: cols }, (_, i) => ({
+        x: i * colW + 12,
+        y: Math.random() * h,
+        speed: 0.4 + Math.random() * 0.9,
+        fontH,
+        lines: Array.from({ length: Math.ceil(h / fontH) + 2 }, line),
+      }));
+    };
+    setup();
+    window.addEventListener('resize', setup);
+    ctx.font = '13px "JetBrains Mono", monospace';
+    let acc = 0;
+    const draw = (t) => {
+      ctx.clearRect(0, 0, w, h);
+      ctx.font = '13px "JetBrains Mono", monospace';
+      for (const col of drops) {
+        col.y += col.speed;
+        if (col.y > col.fontH) {
+          col.y -= col.fontH;
+          col.lines.pop();
+          col.lines.unshift(line());
+        }
+        for (let k = 0; k < col.lines.length; k++) {
+          const yy = col.y + k * col.fontH;
+          if (yy < -col.fontH || yy > h + col.fontH) continue;
+          const fade = 1 - Math.abs(yy - h * 0.5) / (h * 0.7);
+          ctx.globalAlpha = Math.max(0.08, Math.min(0.9, fade));
+          ctx.fillStyle = col.lines[k].c;
+          ctx.fillText(col.lines[k].s, col.x, yy);
+        }
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+  })();
+
+  /* ---------- Event pipeline visualization ---------- */
+  (() => {
+    const canvas = $('pipeline');
+    if (!canvas || reduced) return;
+    let ctx, w, h;
+    const stages = [
+      { name: 'services', color: '#4ade80' },
+      { name: 'collector', color: '#38e1ff' },
+      { name: 'stream', color: '#a78bfa' },
+      { name: 'store', color: '#38e1ff' },
+      { name: 'query', color: '#7c5cff' },
+    ];
+    let nodes = [], packets = [];
+    const setup = () => {
+      const d = fit(canvas); ctx = d.ctx; w = d.w; h = d.h;
+      const pad = 70, span = (w - pad * 2) / (stages.length - 1);
+      nodes = stages.map((s, i) => ({ ...s, x: pad + i * span, y: h / 2 }));
+      packets = [];
+    };
+    setup();
+    window.addEventListener('resize', setup);
+
+    const spawn = () => {
+      const isErr = Math.random() < 0.08;
+      packets.push({
+        seg: 0,
+        t: 0,
+        speed: 0.008 + Math.random() * 0.01,
+        r: 2.5 + Math.random() * 2,
+        color: isErr ? '#f87171' : (Math.random() < 0.4 ? '#a78bfa' : '#4ade80'),
+        wob: Math.random() * Math.PI * 2,
+      });
+    };
+    let spawnAcc = 0;
+    const draw = (ts) => {
+      ctx.clearRect(0, 0, w, h);
+      // edges
+      for (let i = 0; i < nodes.length - 1; i++) {
+        const a = nodes[i], b = nodes[i + 1];
+        const g = ctx.createLinearGradient(a.x, 0, b.x, 0);
+        g.addColorStop(0, 'rgba(120,150,200,0.15)');
+        g.addColorStop(1, 'rgba(120,150,200,0.15)');
+        ctx.strokeStyle = g; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+      // packets
+      spawnAcc += 1;
+      if (spawnAcc > 6) { spawnAcc = 0; spawn(); if (Math.random() < 0.5) spawn(); }
+      for (let i = packets.length - 1; i >= 0; i--) {
+        const p = packets[i];
+        p.t += p.speed;
+        if (p.t >= 1) { p.t = 0; p.seg++; if (p.seg >= nodes.length - 1) { packets.splice(i, 1); continue; } }
+        const a = nodes[p.seg], b = nodes[p.seg + 1];
+        const x = a.x + (b.x - a.x) * p.t;
+        const y = a.y + Math.sin(ts * 0.002 + p.wob) * 10;
+        ctx.beginPath();
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color; ctx.shadowBlur = 10;
+        ctx.arc(x, y, p.r, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      // nodes
+      nodes.forEach((n) => {
+        const pulse = 1 + Math.sin(ts * 0.003 + n.x) * 0.12;
+        ctx.beginPath();
+        ctx.fillStyle = '#0a0e17';
+        ctx.strokeStyle = n.color; ctx.lineWidth = 2;
+        ctx.shadowColor = n.color; ctx.shadowBlur = 14;
+        ctx.arc(n.x, n.y, 13 * pulse, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(230,236,245,0.6)';
+        ctx.font = '11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.name, n.x, n.y + 30);
+      });
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+  })();
+
+  /* ---------- Live metrics + sparkline ---------- */
+  (() => {
+    const ingest = $('m-ingest'), lat = $('m-latency'), vol = $('m-volume'), err = $('m-errors');
+    const spark = $('sparkline');
+    if (!ingest) return;
+    const fmt = (n) => n.toLocaleString('en-US');
+    let base = { ing: 84200, lat: 42, vol: 12.4, err: 0.02 };
+    const jitter = (v, amt) => v + (Math.random() - 0.5) * amt;
+
+    const history = [];
+    let sctx, sw, sh;
+    const setupSpark = () => { if (!spark || reduced) return; const d = fit(spark); sctx = d.ctx; sw = d.w; sh = d.h; };
+    setupSpark();
+    window.addEventListener('resize', setupSpark);
+
+    const update = () => {
+      base.ing = Math.max(60000, jitter(base.ing, 6000));
+      base.lat = Math.max(18, jitter(base.lat, 8));
+      base.vol = Math.max(8, jitter(base.vol, 0.6));
+      base.err = Math.max(0, jitter(base.err, 0.02));
+      ingest.textContent = fmt(Math.round(base.ing));
+      lat.textContent = Math.round(base.lat);
+      vol.textContent = base.vol.toFixed(1);
+      err.textContent = base.err.toFixed(2);
+      history.push(base.ing);
+      if (history.length > 60) history.shift();
+      drawSpark();
+    };
+    const drawSpark = () => {
+      if (!sctx || reduced) return;
+      sctx.clearRect(0, 0, sw, sh);
+      if (history.length < 2) return;
+      const min = Math.min(...history), max = Math.max(...history), range = max - min || 1;
+      sctx.beginPath();
+      history.forEach((v, i) => {
+        const x = (i / (history.length - 1)) * sw;
+        const y = sh - ((v - min) / range) * (sh * 0.8) - sh * 0.1;
+        i === 0 ? sctx.moveTo(x, y) : sctx.lineTo(x, y);
+      });
+      sctx.strokeStyle = '#38e1ff'; sctx.lineWidth = 1.5; sctx.stroke();
+      sctx.lineTo(sw, sh); sctx.lineTo(0, sh); sctx.closePath();
+      const g = sctx.createLinearGradient(0, 0, 0, sh);
+      g.addColorStop(0, 'rgba(56,225,255,0.25)'); g.addColorStop(1, 'rgba(56,225,255,0)');
+      sctx.fillStyle = g; sctx.fill();
+    };
+    update();
+    setInterval(update, reduced ? 3000 : 1200);
+  })();
+
+  /* ---------- Focus card mini-visuals ---------- */
+  const miniCanvas = (host) => {
+    const c = document.createElement('canvas');
+    c.style.width = '100%'; c.style.height = '100%';
+    host.appendChild(c);
+    return c;
+  };
+
+  // Logs: streaming bars
+  (() => {
+    const host = $('viz-logs'); if (!host || reduced) return;
+    const canvas = miniCanvas(host); let ctx, w, h, bars;
+    const cols = ['#4ade80', '#38bdf8', '#fbbf24', '#f87171'];
+    const setup = () => { const d = fit(canvas); ctx = d.ctx; w = d.w; h = d.h;
+      bars = Array.from({ length: 22 }, () => ({ v: Math.random(), c: cols[(Math.random() * cols.length) | 0] })); };
+    setup(); window.addEventListener('resize', setup);
+    let acc = 0;
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h);
+      if (++acc > 8) { acc = 0; bars.shift(); bars.push({ v: Math.random(), c: cols[(Math.random() * cols.length) | 0] }); }
+      const bw = w / bars.length;
+      bars.forEach((b, i) => {
+        const bh = b.v * h * 0.85 + 4;
+        ctx.fillStyle = b.c; ctx.globalAlpha = 0.75;
+        ctx.fillRect(i * bw + 1, h - bh, bw - 2, bh);
+      });
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+  })();
+
+  // Events: orbiting nodes
+  (() => {
+    const host = $('viz-events'); if (!host || reduced) return;
+    const canvas = miniCanvas(host); let ctx, w, h;
+    const setup = () => { const d = fit(canvas); ctx = d.ctx; w = d.w; h = d.h; };
+    setup(); window.addEventListener('resize', setup);
+    const dots = Array.from({ length: 5 }, (_, i) => ({ a: i * 1.25, r: 18 + i * 6, s: 0.01 + i * 0.004 }));
+    const draw = (t) => {
+      ctx.clearRect(0, 0, w, h);
+      const cx = w / 2, cy = h / 2;
+      ctx.strokeStyle = 'rgba(167,139,250,0.15)';
+      dots.forEach((d) => { ctx.beginPath(); ctx.arc(cx, cy, d.r, 0, Math.PI * 2); ctx.stroke(); });
+      ctx.fillStyle = '#a78bfa'; ctx.shadowColor = '#a78bfa'; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
+      dots.forEach((d) => {
+        d.a += d.s;
+        const x = cx + Math.cos(d.a) * d.r, y = cy + Math.sin(d.a) * d.r;
+        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.shadowBlur = 0;
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+  })();
+
+  // Reliability: SLO gauge line
+  (() => {
+    const host = $('viz-rel'); if (!host || reduced) return;
+    const canvas = miniCanvas(host); let ctx, w, h;
+    const setup = () => { const d = fit(canvas); ctx = d.ctx; w = d.w; h = d.h; };
+    setup(); window.addEventListener('resize', setup);
+    const pts = Array.from({ length: 40 }, () => 0.5);
+    let acc = 0;
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h);
+      if (++acc > 4) { acc = 0; pts.shift(); pts.push(Math.max(0.1, Math.min(0.9, pts[pts.length - 1] + (Math.random() - 0.5) * 0.3))); }
+      // SLO threshold line
+      ctx.strokeStyle = 'rgba(248,113,113,0.4)'; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(0, h * 0.25); ctx.lineTo(w, h * 0.25); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      pts.forEach((p, i) => { const x = (i / (pts.length - 1)) * w, y = h - p * h; i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+      ctx.strokeStyle = '#38e1ff'; ctx.lineWidth = 2; ctx.stroke();
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+  })();
+
+  /* ---------- Stack grid ---------- */
+  (() => {
+    const grid = $('stack-grid'); if (!grid) return;
+    const stack = [
+      ['Kafka', '#a78bfa'], ['OpenTelemetry', '#38e1ff'], ['Elasticsearch', '#fbbf24'],
+      ['Prometheus', '#f87171'], ['Grafana', '#fb923c'], ['Kubernetes', '#38bdf8'],
+      ['Go', '#38e1ff'], ['Java', '#f87171'], ['Python', '#4ade80'],
+      ['Loki', '#4ade80'], ['ClickHouse', '#fbbf24'], ['Spark', '#fb923c'],
+      ['Flink', '#a78bfa'], ['Terraform', '#7c5cff'], ['SQL', '#38bdf8'], ['Linux', '#e6ecf5'],
+    ];
+    grid.innerHTML = stack.map(([n, c]) =>
+      `<div class="stack-item"><span class="sdot" style="background:${c};box-shadow:0 0 8px ${c}"></span>${n}</div>`
+    ).join('');
+  })();
+
+  /* ---------- Work grid (curated + GitHub live fetch) ---------- */
+  (() => {
+    const grid = $('work-grid'); if (!grid) return;
+    const langColor = (l) => ({
+      TypeScript: '#38bdf8', JavaScript: '#fbbf24', Python: '#4ade80',
+      Go: '#38e1ff', Java: '#f87171', 'C++': '#a78bfa', HTML: '#fb923c', C: '#94a3b8',
+    }[l] || '#8a97ad');
+    const card = (r) => `
+      <a class="work-card" href="${r.html_url}" target="_blank" rel="noopener">
+        <div class="work-top">
+          <span class="work-name">${r.name}</span>
+          ${r.stargazers_count ? `<span class="work-star">★ ${r.stargazers_count}</span>` : ''}
+        </div>
+        <p class="work-desc">${r.description || 'No description provided.'}</p>
+        <div class="work-lang"><span class="sdot" style="width:9px;height:9px;border-radius:50%;background:${langColor(r.language)}"></span>${r.language || 'code'}</div>
+      </a>`;
+
+    // Curated: substantial code projects (excludes notes/PDF/design repos).
+    const curated = [
+      { name: 'pdf-tools', html_url: 'https://github.com/likithsrinath2000/pdf-tools', stargazers_count: 0, language: 'TypeScript',
+        description: 'Production-ready web app with 30+ PDF and image tools. Built with React, Express and PostgreSQL.' },
+      { name: 'Metro-Project', html_url: 'https://github.com/likithsrinath2000/Metro-Project', stargazers_count: 0, language: 'HTML',
+        description: 'Award-winning automatic metro ticketing system using facial recognition.' },
+      { name: 'AIML_LAB', html_url: 'https://github.com/likithsrinath2000/AIML_LAB', stargazers_count: 5, language: 'Python',
+        description: 'Machine-learning algorithms implemented from scratch: classification, clustering and search.' },
+      { name: 'CG-Assignment', html_url: 'https://github.com/likithsrinath2000/CG-Assignment', stargazers_count: 0, language: 'C++',
+        description: 'Real-time gravity simulator rendered with OpenGL, exploring physics and computer graphics.' },
+      { name: 'Edvora_Task', html_url: 'https://github.com/likithsrinath2000/Edvora_Task', stargazers_count: 0, language: 'JavaScript',
+        description: 'Authentication API with register, login and change-password endpoints.' },
+      { name: 'REST-Client-Server', html_url: 'https://github.com/likithsrinath2000/REST-Client-Server', stargazers_count: 0, language: 'Python',
+        description: 'A REST client and server exploring API design and HTTP fundamentals.' },
+    ];
+    grid.innerHTML = curated.map(card).join('');
+
+    // Keep star counts fresh from GitHub without pulling in trivial repos.
+    fetch('https://api.github.com/users/likithsrinath2000/repos?per_page=100')
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((repos) => {
+        const byName = Object.fromEntries(repos.map((r) => [r.name, r]));
+        curated.forEach((c) => { if (byName[c.name]) c.stargazers_count = byName[c.name].stargazers_count; });
+        grid.innerHTML = curated.map(card).join('');
+      })
+      .catch(() => { /* keep curated as-is */ });
+  })();
+
+  /* ---------- Scroll reveal ---------- */
+  (() => {
+    const targets = document.querySelectorAll('.section, .card, .work-card, .about-grid');
+    if (reduced || !('IntersectionObserver' in window)) { targets.forEach((t) => t.classList.add('in')); return; }
+    targets.forEach((t) => t.classList.add('reveal'));
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    targets.forEach((t) => io.observe(t));
+  })();
+})();
+
+/* =========================================================
+   Experience · career log explorer
+   ========================================================= */
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const rows = $('log-rows');
+  if (!rows) return;
+
+  const CAREER = [
+    { ts: '2025 → now', dur: '9 mos', level: 'ACTIVE', company: 'LinkedIn', role: 'Senior Software Engineer, Observability',
+      tags: ['linkedin', 'fulltime', 'current', 'observability'],
+      msg: 'Logs & Events platforms at global scale',
+      details: [
+        'Design and operate high-throughput log and event pipelines powering observability for global cloud networks',
+        'Own reliability, cost and query performance of the telemetry platform end to end',
+        'Build operational analytics on Azure Data Explorer (KQL) for logs, events and metrics',
+        'Drive technical direction, review designs and mentor engineers across teams',
+        'Improved application load and response times; fixed critical production bugs' ] },
+    { ts: '2023 → 2025', dur: '2 yrs 4 mos', level: 'INFO', company: 'LinkedIn', role: 'Software Engineer, Observability',
+      tags: ['linkedin', 'fulltime', 'observability'],
+      msg: 'Full-stack + DevOps for observability tooling',
+      details: [
+        'Built and maintained reliable observability tooling for global cloud networks',
+        'Migrated applications to Python 3.10, improving performance and maintainability',
+        'Improved load and response times across services and fixed critical bugs',
+        'Collaborated with engineers and teams to keep tools accessible and user-friendly',
+        'Deepened log, event and metric analytics with Azure Data Explorer' ] },
+    { ts: '2022 → 2023', dur: '10 mos', level: 'INFO', company: 'LinkedIn', role: 'Site Reliability Engineer, Observability',
+      tags: ['linkedin', 'fulltime', 'observability'],
+      msg: 'Reliability & SLOs for observability systems',
+      details: [
+        'On-call, incident response and resilience engineering for observability infrastructure',
+        'Defined and tracked SLOs and error budgets; reduced toil through automation',
+        'Used Azure Data Explorer and logging pipelines to debug and analyse production issues',
+        'Laid the reliability foundation that carried into the SWE and Senior SWE roles' ] },
+    { ts: '2022', dur: '5 mos', level: 'INFO', company: 'Johnson Controls', role: 'ERP Consultant',
+      tags: ['fulltime'],
+      msg: 'Enterprise Resource Planning implementations',
+      details: [
+        'Implemented and configured ERP systems for enterprise clients',
+        'Worked with Informatica Cloud, MySQL and stakeholders on delivery' ] },
+    { ts: '2021', dur: '6 mos', level: 'DEBUG', company: 'Vaave', role: 'Product Development Intern',
+      tags: ['internship'], msg: 'Product development on the Vaave platform',
+      details: ['Contributed to product features and platform development'] },
+    { ts: '2021', dur: '5 mos', level: 'DEBUG', company: 'BMSIT&M', role: 'Project Management Intern',
+      tags: ['internship'], msg: 'Project management',
+      details: ['Coordinated project planning and delivery at the institute'] },
+    { ts: '2021', dur: '1 mo', level: 'DEBUG', company: 'Old Dominion University', role: 'R&D Intern',
+      tags: ['internship'], msg: 'Research & development',
+      details: ['Short research and development internship'] },
+    { ts: '2020', dur: '5 mos', level: 'DEBUG', company: 'CoachEd', role: 'Frontend Developer Intern',
+      tags: ['internship'], msg: 'Frontend development with React.js',
+      details: ['Built user-facing features with React.js'] },
+    { ts: '2020', dur: '2 mos', level: 'DEBUG', company: 'Finera', role: 'Graphic Designer Intern',
+      tags: ['internship'], msg: 'Graphic design',
+      details: ['Produced graphic design and branding assets'] },
+    { ts: '2019', dur: '8 mos', level: 'DEBUG', company: 'Vaave', role: 'Alumni Relations Intern',
+      tags: ['internship'], msg: 'Alumni relations',
+      details: ['Supported alumni engagement and relationship building'] },
+  ];
+
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  const rowHtml = (e, i) => `
+    <div class="log-row" data-i="${i}" data-tags="${e.tags.join(' ')}">
+      <span class="lr-ts">${e.ts}</span>
+      <span class="lr-lvl lvl-${e.level}">${e.level}</span>
+      <span class="lr-svc">${esc(e.company)}</span>
+      <span class="lr-msg"><span class="lr-caret">▸</span><span class="role">${esc(e.role)}</span> · ${esc(e.msg)}<span class="lr-dur">${e.dur}</span></span>
+      <div class="lr-details">${e.details.length ? `<ul>${e.details.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>` : '<ul><li>n/a</li></ul>'}</div>
+    </div>`;
+
+  rows.innerHTML = CAREER.map(rowHtml).join('');
+
+  // expand/collapse
+  rows.querySelectorAll('.log-row').forEach((r) => {
+    r.addEventListener('click', () => r.classList.toggle('open'));
+  });
+
+  // filters
+  const filters = $('filters');
+  const kqlFilter = $('kql-filter');
+  const stats = $('query-stats');
+  const FILTER_KQL = {
+    all: '',
+    current: '\n| where tags has "current"',
+    observability: '\n| where domain == "observability"',
+    linkedin: '\n| where company == "LinkedIn"',
+    fulltime: '\n| where tags has "fulltime"',
+    internship: '\n| where tags has "internship"',
+  };
+  const applyFilter = (f) => {
+    let shown = 0;
+    rows.querySelectorAll('.log-row').forEach((r) => {
+      const match = f === 'all' || r.dataset.tags.split(' ').includes(f);
+      r.style.display = match ? '' : 'none';
+      if (match) shown++;
+    });
+    kqlFilter.textContent = FILTER_KQL[f] || '';
+    stats.innerHTML = `<span class="qs-hi">${shown}</span> role${shown === 1 ? '' : 's'} returned · 3 yrs 11 mos total · scanned ${CAREER.length} records in <span class="qs-hi">${(3 + Math.random() * 4).toFixed(1)}ms</span>`;
+  };
+  filters.querySelectorAll('.filter').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filters.querySelectorAll('.filter').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilter(btn.dataset.f);
+    });
+  });
+  applyFilter('all');
+
+  // tenure histogram: one bar per role, height = time spent in that role
+  const histo = $('histo');
+  if (histo) {
+    const parseMonths = (d) => {
+      let m = 0;
+      const y = d.match(/(\d+)\s*yr/); if (y) m += parseInt(y[1], 10) * 12;
+      const mo = d.match(/(\d+)\s*mo/); if (mo) m += parseInt(mo[1], 10);
+      return m || 1;
+    };
+    const barColor = (e) => {
+      if (e.level === 'ACTIVE') return '#38e1ff';           // current role
+      if (e.tags.includes('observability')) return '#4ade80'; // o11y tenure
+      if (e.tags.includes('internship')) return '#5f6b80';    // internships
+      return '#a78bfa';                                        // other full-time
+    };
+    const chrono = [...CAREER].reverse(); // oldest -> newest (left -> right)
+    const maxM = Math.max(...chrono.map((e) => parseMonths(e.dur)));
+    histo.innerHTML = chrono.map((e) => {
+      const m = parseMonths(e.dur);
+      const h = Math.max(8, (m / maxM) * 100);
+      const c = barColor(e);
+      return `<div class="histo-bar" style="height:${h}%;background:linear-gradient(180deg, ${c}, ${c}22)" title="${e.company} · ${e.role} · ${e.dur}"></div>`;
+    }).join('');
+  }
+})();
