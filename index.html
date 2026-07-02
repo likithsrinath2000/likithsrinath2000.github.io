@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark light" />
   <title>Likith Srinath · Observability Engineer</title>
   <meta name="description" content="Likith Srinath · Software Engineer in Observability (Logs & Events), ex-SRE. Building reliable, well-instrumented systems." />
   <meta name="author" content="Likith Srinath" />
@@ -18,19 +19,31 @@
 
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%A1%3C/text%3E%3C/svg%3E" />
+  <script>
+    // Set theme before first paint to avoid a flash of the wrong theme.
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
 </head>
 <body>
+  <a class="skip-link" href="#top">Skip to content</a>
+
   <!-- Live log-stream canvas backdrop -->
   <canvas id="log-stream" aria-hidden="true"></canvas>
   <div class="scanline" aria-hidden="true"></div>
 
   <!-- Nav -->
   <header class="nav">
-    <a class="brand" href="#top">
-      <span class="brand-dot"></span>
+    <a class="brand" href="#top" aria-label="Home">
+      <span class="brand-dot" aria-hidden="true"></span>
       <span class="brand-text">likith<span class="accent">.o11y</span></span>
     </a>
-    <nav class="nav-links">
+    <nav class="nav-links" aria-label="Primary">
       <a href="#about">About</a>
       <a href="#experience">Experience</a>
       <a href="#focus">Focus</a>
@@ -40,6 +53,9 @@
       <a href="#community">Community</a>
       <a href="#contact" class="nav-cta">Contact</a>
     </nav>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" title="Toggle light/dark theme">
+      <span class="theme-icon" aria-hidden="true">☾</span>
+    </button>
   </header>
 
   <main id="top">
@@ -180,23 +196,23 @@
 <span class="k-op">|</span> <span class="k-kw">order by</span> ts <span class="k-kw">desc</span></pre>
 
         <!-- filter chips -->
-        <div class="filters" id="filters">
-          <button class="filter active" data-f="all">all</button>
-          <button class="filter" data-f="current">current</button>
-          <button class="filter" data-f="observability">observability</button>
-          <button class="filter" data-f="linkedin">linkedin</button>
-          <button class="filter" data-f="fulltime">full-time</button>
-          <button class="filter" data-f="internship">internships</button>
+        <div class="filters" id="filters" role="group" aria-label="Filter career log by category">
+          <button class="filter active" data-f="all" aria-pressed="true">all</button>
+          <button class="filter" data-f="current" aria-pressed="false">current</button>
+          <button class="filter" data-f="observability" aria-pressed="false">observability</button>
+          <button class="filter" data-f="linkedin" aria-pressed="false">linkedin</button>
+          <button class="filter" data-f="fulltime" aria-pressed="false">full-time</button>
+          <button class="filter" data-f="internship" aria-pressed="false">internships</button>
         </div>
 
         <!-- tenure histogram -->
         <div class="histo-wrap">
           <span class="histo-label">tenure<br><span class="histo-axis">older → newer</span></span>
-          <div class="histo" id="histo"></div>
+          <div class="histo" id="histo" role="img" aria-label="Bar chart of tenure per role, oldest to newest"></div>
         </div>
 
         <!-- results header -->
-        <div class="log-head">
+        <div class="log-head" aria-hidden="true">
           <span class="lh-ts">timestamp</span>
           <span class="lh-lvl">level</span>
           <span class="lh-svc">service</span>
@@ -204,7 +220,7 @@
         </div>
 
         <!-- log rows injected here -->
-        <div class="log-rows" id="log-rows"></div>
+        <div class="log-rows" id="log-rows" role="list" aria-label="Career history, each role expandable"></div>
 
         <!-- query stats -->
         <div class="query-stats" id="query-stats"></div>

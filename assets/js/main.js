@@ -124,6 +124,11 @@
       { name: 'query', color: '#7c5cff' },
     ];
     let nodes = [], packets = [];
+    let labelColor = 'rgba(230,236,245,0.72)';
+    const readLabelColor = () => {
+      const t = getComputedStyle(document.documentElement).getPropertyValue('--text').trim();
+      labelColor = t || 'rgba(230,236,245,0.72)';
+    };
     const setup = () => {
       const d = fit(canvas); ctx = d.ctx; w = d.w; h = d.h;
       const pad = Math.max(26, Math.min(70, w * 0.1));
@@ -135,7 +140,9 @@
       packets = [];
     };
     setup();
+    readLabelColor();
     window.addEventListener('resize', setup);
+    window.addEventListener('themechange', readLabelColor);
 
     const spawn = () => {
       const isErr = Math.random() < 0.08;
@@ -186,7 +193,7 @@
         ctx.arc(n.x, n.y, nodeR * pulse, 0, Math.PI * 2);
         ctx.fill(); ctx.stroke();
         ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(230,236,245,0.72)';
+        ctx.fillStyle = labelColor;
         ctx.font = `${labelFont}px "JetBrains Mono", monospace`;
         ctx.textAlign = 'center';
         const below = !stagger || i % 2 === 0;
@@ -442,19 +449,25 @@
   const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   const rowHtml = (e, i) => `
-    <div class="log-row" data-i="${i}" data-tags="${e.tags.join(' ')}">
-      <span class="lr-ts">${e.ts}</span>
-      <span class="lr-lvl lvl-${e.level}">${e.level}</span>
-      <span class="lr-svc">${esc(e.company)}</span>
-      <span class="lr-msg"><span class="lr-caret">▸</span><span class="role">${esc(e.role)}</span> · ${esc(e.msg)}<span class="lr-dur">${e.dur}</span></span>
-      <div class="lr-details">${e.details.length ? `<ul>${e.details.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>` : '<ul><li>n/a</li></ul>'}</div>
+    <div class="log-row" data-i="${i}" data-tags="${e.tags.join(' ')}" role="listitem">
+      <button class="lr-summary" type="button" aria-expanded="false" aria-controls="lr-det-${i}">
+        <span class="lr-ts">${e.ts}</span>
+        <span class="lr-lvl lvl-${e.level}">${e.level}</span>
+        <span class="lr-svc">${esc(e.company)}</span>
+        <span class="lr-msg"><span class="lr-caret" aria-hidden="true">▸</span><span class="role">${esc(e.role)}</span> · ${esc(e.msg)}<span class="lr-dur">${e.dur}</span></span>
+      </button>
+      <div class="lr-details" id="lr-det-${i}">${e.details.length ? `<ul>${e.details.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>` : '<ul><li>n/a</li></ul>'}</div>
     </div>`;
 
   rows.innerHTML = CAREER.map(rowHtml).join('');
 
-  // expand/collapse
+  // expand/collapse (click + keyboard via native button)
   rows.querySelectorAll('.log-row').forEach((r) => {
-    r.addEventListener('click', () => r.classList.toggle('open'));
+    const btn = r.querySelector('.lr-summary');
+    btn.addEventListener('click', () => {
+      const open = r.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
   });
 
   // filters
@@ -481,8 +494,9 @@
   };
   filters.querySelectorAll('.filter').forEach((btn) => {
     btn.addEventListener('click', () => {
-      filters.querySelectorAll('.filter').forEach((b) => b.classList.remove('active'));
+      filters.querySelectorAll('.filter').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
       btn.classList.add('active');
+      btn.setAttribute('aria-pressed', 'true');
       applyFilter(btn.dataset.f);
     });
   });
@@ -550,4 +564,29 @@
     entries.forEach((e) => { if (e.isIntersecting) { run(e.target); io.unobserve(e.target); } });
   }, { threshold: 0.4 });
   stats.forEach((s) => io.observe(s));
+})();
+
+/* =========================================================
+   Theme toggle (light / dark) with persistence
+   ========================================================= */
+(() => {
+  'use strict';
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  const root = document.documentElement;
+  const icon = btn.querySelector('.theme-icon');
+  const apply = (theme) => {
+    root.setAttribute('data-theme', theme);
+    const toLight = theme === 'dark';
+    btn.setAttribute('aria-label', toLight ? 'Switch to light theme' : 'Switch to dark theme');
+    if (icon) icon.textContent = theme === 'dark' ? '☾' : '☀';
+  };
+  // sync icon/label with the theme set pre-paint in <head>
+  apply(root.getAttribute('data-theme') || 'dark');
+  btn.addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    apply(next);
+    try { localStorage.setItem('theme', next); } catch (e) { /* ignore */ }
+    window.dispatchEvent(new Event('themechange'));
+  });
 })();
