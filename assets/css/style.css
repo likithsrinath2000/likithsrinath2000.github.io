@@ -616,3 +616,87 @@ main, .footer { position: relative; z-index: 2; }
 
 @media (max-width: 900px) { .impact { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 560px) { .impact { grid-template-columns: repeat(2, 1fr); } }
+
+/* =========================================================
+   Work owner badge
+   ========================================================= */
+.work-owner {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--quiet);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   Beyond the pipeline: volunteering + certifications
+   ========================================================= */
+.beyond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.beyond-panel {
+  padding: 26px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+}
+.beyond-title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 1.15rem;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.beyond-ico { color: var(--accent); font-size: 1rem; }
+
+.beyond-list { list-style: none; display: flex; flex-direction: column; gap: 18px; }
+.beyond-list li { position: relative; padding-left: 18px; }
+.beyond-list li::before {
+  content: ''; position: absolute; left: 0; top: 7px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2);
+}
+.bl-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.bl-role { font-weight: 600; color: var(--text); font-size: 0.98rem; }
+.bl-org {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem; color: var(--accent-2);
+  border: 1px solid rgba(124,92,255,0.3);
+  padding: 1px 8px; border-radius: 999px;
+}
+.beyond-list p { color: var(--muted); font-size: 0.9rem; }
+
+.cert-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.cert-list li {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 0.94rem; color: var(--text);
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(120,150,200,0.06);
+}
+.cert-list li:last-child { border-bottom: none; }
+.cert-cat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--accent);
+  background: rgba(56,225,255,0.08);
+  border: 1px solid rgba(56,225,255,0.2);
+  padding: 2px 8px; border-radius: 5px;
+  min-width: 58px; text-align: center; flex: none;
+}
+.award-strip {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 20px; padding: 14px 16px;
+  border: 1px solid rgba(251,191,36,0.25);
+  background: rgba(251,191,36,0.06);
+  border-radius: 10px;
+  font-size: 0.88rem; color: var(--muted);
+}
+.award-key {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; font-weight: 700;
+  color: #041019; background: var(--warn);
+  padding: 3px 9px; border-radius: 5px; flex: none;
+}
+
+@media (max-width: 820px) { .beyond-grid { grid-template-columns: 1fr; } }

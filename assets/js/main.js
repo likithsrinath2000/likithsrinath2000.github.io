@@ -336,49 +336,39 @@
     ).join('');
   })();
 
-  /* ---------- Work grid (curated + GitHub live fetch) ---------- */
+  /* ---------- Work grid (curated across repos/orgs) ---------- */
   (() => {
     const grid = $('work-grid'); if (!grid) return;
     const langColor = (l) => ({
       TypeScript: '#38bdf8', JavaScript: '#fbbf24', Python: '#4ade80',
-      Go: '#38e1ff', Java: '#f87171', 'C++': '#a78bfa', HTML: '#fb923c', C: '#94a3b8',
+      Go: '#38e1ff', Java: '#f87171', 'C++': '#a78bfa', HTML: '#fb923c',
+      C: '#94a3b8', EJS: '#a91e50', Kotlin: '#a97bff',
     }[l] || '#8a97ad');
     const card = (r) => `
       <a class="work-card" href="${r.html_url}" target="_blank" rel="noopener">
         <div class="work-top">
           <span class="work-name">${r.name}</span>
-          ${r.stargazers_count ? `<span class="work-star">★ ${r.stargazers_count}</span>` : ''}
+          ${r.owner ? `<span class="work-owner">${r.owner}</span>` : ''}
         </div>
-        <p class="work-desc">${r.description || 'No description provided.'}</p>
+        <p class="work-desc">${r.description}</p>
         <div class="work-lang"><span class="sdot" style="width:9px;height:9px;border-radius:50%;background:${langColor(r.language)}"></span>${r.language || 'code'}</div>
       </a>`;
 
-    // Curated: substantial code projects (excludes notes/PDF/design repos).
     const curated = [
-      { name: 'pdf-tools', html_url: 'https://github.com/likithsrinath2000/pdf-tools', stargazers_count: 0, language: 'TypeScript',
+      { name: 'pdf-tools', owner: 'likithsrinath2000', html_url: 'https://github.com/likithsrinath2000/pdf-tools', language: 'TypeScript',
         description: 'Production-ready web app with 30+ PDF and image tools. Built with React, Express and PostgreSQL.' },
-      { name: 'Metro-Project', html_url: 'https://github.com/likithsrinath2000/Metro-Project', stargazers_count: 0, language: 'HTML',
+      { name: 'Metro-Project', owner: 'likithsrinath2000', html_url: 'https://github.com/likithsrinath2000/Metro-Project', language: 'HTML',
         description: 'Award-winning automatic metro ticketing system using facial recognition.' },
-      { name: 'AIML_LAB', html_url: 'https://github.com/likithsrinath2000/AIML_LAB', stargazers_count: 5, language: 'Python',
-        description: 'Machine-learning algorithms implemented from scratch: classification, clustering and search.' },
-      { name: 'CG-Assignment', html_url: 'https://github.com/likithsrinath2000/CG-Assignment', stargazers_count: 0, language: 'C++',
-        description: 'Real-time gravity simulator rendered with OpenGL, exploring physics and computer graphics.' },
-      { name: 'Edvora_Task', html_url: 'https://github.com/likithsrinath2000/Edvora_Task', stargazers_count: 0, language: 'JavaScript',
-        description: 'Authentication API with register, login and change-password endpoints.' },
-      { name: 'REST-Client-Server', html_url: 'https://github.com/likithsrinath2000/REST-Client-Server', stargazers_count: 0, language: 'Python',
-        description: 'A REST client and server exploring API design and HTTP fundamentals.' },
+      { name: 'Bedsore-FE', owner: 'the-Doers', html_url: 'https://github.com/the-Doers/Bedsore-FE', language: 'EJS',
+        description: 'Frontend for a bedsore (pressure-ulcer) detection and monitoring system.' },
+      { name: 'Stress_Detection', owner: 'ODU-Internship', html_url: 'https://github.com/ODU-Internship/Stress_Detection', language: 'Python',
+        description: 'Machine-learning stress detection from physiological signals (ODU research internship).' },
+      { name: 'Sentiment_Analysis', owner: 'ODU-Internship', html_url: 'https://github.com/ODU-Internship/Sentiment_Analysis', language: 'Python',
+        description: 'NLP sentiment-analysis models and pipeline built during the ODU research internship.' },
+      { name: 'Fall', owner: 'ODU-Internship', html_url: 'https://github.com/ODU-Internship/Fall', language: 'Kotlin',
+        description: 'Fall-detection Android app for elderly-care research (ODU internship).' },
     ];
     grid.innerHTML = curated.map(card).join('');
-
-    // Keep star counts fresh from GitHub without pulling in trivial repos.
-    fetch('https://api.github.com/users/likithsrinath2000/repos?per_page=100')
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((repos) => {
-        const byName = Object.fromEntries(repos.map((r) => [r.name, r]));
-        curated.forEach((c) => { if (byName[c.name]) c.stargazers_count = byName[c.name].stargazers_count; });
-        grid.innerHTML = curated.map(card).join('');
-      })
-      .catch(() => { /* keep curated as-is */ });
   })();
 
   /* ---------- Scroll reveal ---------- */
