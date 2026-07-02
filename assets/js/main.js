@@ -115,7 +115,7 @@
   (() => {
     const canvas = $('pipeline');
     if (!canvas || reduced) return;
-    let ctx, w, h;
+    let ctx, w, h, nodeR = 13, labelFont = 11, stagger = false;
     const stages = [
       { name: 'services', color: '#4ade80' },
       { name: 'collector', color: '#38e1ff' },
@@ -126,7 +126,11 @@
     let nodes = [], packets = [];
     const setup = () => {
       const d = fit(canvas); ctx = d.ctx; w = d.w; h = d.h;
-      const pad = 70, span = (w - pad * 2) / (stages.length - 1);
+      const pad = Math.max(26, Math.min(70, w * 0.1));
+      const span = (w - pad * 2) / (stages.length - 1);
+      nodeR = Math.max(7, Math.min(13, span * 0.26));
+      labelFont = Math.max(8, Math.min(11, span / 5.2));
+      stagger = span < 82; // tight layout: alternate labels above/below
       nodes = stages.map((s, i) => ({ ...s, x: pad + i * span, y: h / 2 }));
       packets = [];
     };
@@ -173,19 +177,21 @@
         ctx.shadowBlur = 0;
       }
       // nodes
-      nodes.forEach((n) => {
+      nodes.forEach((n, i) => {
         const pulse = 1 + Math.sin(ts * 0.003 + n.x) * 0.12;
         ctx.beginPath();
         ctx.fillStyle = '#0a0e17';
         ctx.strokeStyle = n.color; ctx.lineWidth = 2;
         ctx.shadowColor = n.color; ctx.shadowBlur = 14;
-        ctx.arc(n.x, n.y, 13 * pulse, 0, Math.PI * 2);
+        ctx.arc(n.x, n.y, nodeR * pulse, 0, Math.PI * 2);
         ctx.fill(); ctx.stroke();
         ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(230,236,245,0.6)';
-        ctx.font = '11px "JetBrains Mono", monospace';
+        ctx.fillStyle = 'rgba(230,236,245,0.72)';
+        ctx.font = `${labelFont}px "JetBrains Mono", monospace`;
         ctx.textAlign = 'center';
-        ctx.fillText(n.name, n.x, n.y + 30);
+        const below = !stagger || i % 2 === 0;
+        const ly = below ? n.y + nodeR + labelFont + 5 : n.y - nodeR - 8;
+        ctx.fillText(n.name, n.x, ly);
       });
       requestAnimationFrame(draw);
     };
