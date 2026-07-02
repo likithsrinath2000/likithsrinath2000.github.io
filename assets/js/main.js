@@ -364,7 +364,7 @@
       { name: 'pdf-tools', owner: 'likithsrinath2000', html_url: 'https://github.com/likithsrinath2000/pdf-tools', language: 'TypeScript',
         description: 'Production-ready web app with 30+ PDF and image tools. Built with React, Express and PostgreSQL.' },
       { name: 'Metro-Project', owner: 'likithsrinath2000', html_url: 'https://github.com/likithsrinath2000/Metro-Project', language: 'HTML',
-        description: 'Award-winning automatic metro ticketing system using facial recognition.' },
+        description: 'Automatic metro ticketing system using facial recognition. Node.js, Express, EJS and MySQL.' },
       { name: 'Bedsore-FE', owner: 'the-Doers', html_url: 'https://github.com/the-Doers/Bedsore-FE', language: 'EJS',
         description: 'Frontend for a bedsore (pressure-ulcer) detection and monitoring system.' },
       { name: 'Stress_Detection', owner: 'ODU-Internship', html_url: 'https://github.com/ODU-Internship/Stress_Detection', language: 'Python',
