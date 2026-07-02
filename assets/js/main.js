@@ -325,11 +325,11 @@
   (() => {
     const grid = $('stack-grid'); if (!grid) return;
     const stack = [
-      ['Kafka', '#a78bfa'], ['OpenTelemetry', '#38e1ff'], ['Elasticsearch', '#fbbf24'],
-      ['Prometheus', '#f87171'], ['Grafana', '#fb923c'], ['Kubernetes', '#38bdf8'],
-      ['Go', '#38e1ff'], ['Java', '#f87171'], ['Python', '#4ade80'],
-      ['Loki', '#4ade80'], ['ClickHouse', '#fbbf24'], ['Spark', '#fb923c'],
-      ['Flink', '#a78bfa'], ['Terraform', '#7c5cff'], ['SQL', '#38bdf8'], ['Linux', '#e6ecf5'],
+      ['Kafka', '#a78bfa'], ['FluentBit', '#fb923c'], ['Azure Data Explorer', '#38bdf8'],
+      ['Kusto / KQL', '#38e1ff'], ['Azure Blob', '#7c5cff'], ['Terraform', '#a78bfa'],
+      ['Spark', '#fb923c'], ['Kubernetes', '#38bdf8'], ['Go', '#38e1ff'],
+      ['Python', '#4ade80'], ['C', '#94a3b8'], ['MySQL', '#fbbf24'],
+      ['GitHub Actions', '#e6ecf5'], ['Event Grid', '#7c5cff'], ['LLMs / Claude', '#4ade80'], ['MELT', '#f87171'],
     ];
     grid.innerHTML = stack.map(([n, c]) =>
       `<div class="stack-item"><span class="sdot" style="background:${c};box-shadow:0 0 8px ${c}"></span>${n}</div>`
@@ -403,56 +403,44 @@
   if (!rows) return;
 
   const CAREER = [
-    { ts: '2025 → now', dur: '9 mos', level: 'ACTIVE', company: 'LinkedIn', role: 'Senior Software Engineer, Observability',
+    { ts: 'Oct 2025 → now', dur: '9 mos', level: 'ACTIVE', company: 'LinkedIn', role: 'Senior Software Engineer, Observability',
       tags: ['linkedin', 'fulltime', 'current', 'observability'],
-      msg: 'Logs & Events platforms at global scale',
+      msg: 'Logs & Events (MELT), 5PB+/day, 15.3M events/day',
       details: [
-        'Design and operate high-throughput log and event pipelines powering observability for global cloud networks',
-        'Own reliability, cost and query performance of the telemetry platform end to end',
-        'Build operational analytics on Azure Data Explorer (KQL) for logs, events and metrics',
-        'Drive technical direction, review designs and mentor engineers across teams',
-        'Improved application load and response times; fixed critical production bugs' ] },
-    { ts: '2023 → 2025', dur: '2 yrs 4 mos', level: 'INFO', company: 'LinkedIn', role: 'Software Engineer, Observability',
+        'Scale & ingestion: own telemetry pipelines processing 5PB+ of data daily; built a resilient Change Events pipeline ingesting 15.3M events/day into Azure Data Explorer with under 10s lag',
+        'Cost & cloud: delivered $550K/yr in confirmed savings via Azure Storage Actions, batching policy changes, log hygiene, structured logging and stopping dual writes; cut multi-PB trace storage 30% with Terraform',
+        'High-performance: built a Go-native direct-to-Kafka log shipping library from scratch, cutting shipping overhead 88% via async enrichment at under 200ns/op across 157 Go services',
+        'AI-driven observability: built custom Claude skills and plugins to automate log hygiene and debugging; shipped an end-to-end log-table snapshotting platform for internal AI eval pipelines',
+        'Reliability & migrations: enabled a zero-downtime cutover of 800 Kafka topics to a next-gen messaging fabric; resolved a major SEV across 4000 production hosts and eliminated 10% data loss on critical tables',
+        'Leadership: mentored interns and junior engineers; authored 500+ PRs in FY26; recognized globally as Champion Interviewer and Feedback Ninja' ] },
+    { ts: 'Jun 2023 → Oct 2025', dur: '2 yrs 4 mos', level: 'INFO', company: 'LinkedIn', role: 'Software Engineer, Observability',
       tags: ['linkedin', 'fulltime', 'observability'],
-      msg: 'Full-stack + DevOps for observability tooling',
+      msg: 'Centralized logging platform & events store',
       details: [
-        'Built and maintained reliable observability tooling for global cloud networks',
-        'Migrated applications to Python 3.10, improving performance and maintainability',
-        'Improved load and response times across services and fixed critical bugs',
-        'Collaborated with engineers and teams to keep tools accessible and user-friendly',
-        'Deepened log, event and metric analytics with Azure Data Explorer' ] },
-    { ts: '2022 → 2023', dur: '10 mos', level: 'INFO', company: 'LinkedIn', role: 'Site Reliability Engineer, Observability',
+        'Centralized logging: owned operational health of the centralized logging platform and events store; improved data handling, accessibility and reliability across stakeholders',
+        'Log enrichment: built a custom Fluent Bit plugin on Kubernetes to enrich logs and ship change events across the cluster',
+        'Cloud infrastructure: designed robust processing pipelines on Azure Data Explorer, Azure Blob Storage and Azure Event Grid',
+        'Developer productivity: automated onboarding setup and wrote clear docs, significantly reducing onboarding effort and mentoring new hires' ] },
+    { ts: 'Aug 2022 → Jun 2023', dur: '10 mos', level: 'INFO', company: 'LinkedIn', role: 'Site Reliability Engineer, Observability',
       tags: ['linkedin', 'fulltime', 'observability'],
-      msg: 'Reliability & SLOs for observability systems',
+      msg: 'Reliability for Events store & GCNS; Python 3.10 migration',
       details: [
-        'On-call, incident response and resilience engineering for observability infrastructure',
-        'Defined and tracked SLOs and error budgets; reduced toil through automation',
-        'Used Azure Data Explorer and logging pipelines to debug and analyse production issues',
-        'Laid the reliability foundation that carried into the SWE and Senior SWE roles' ] },
-    { ts: '2022', dur: '5 mos', level: 'INFO', company: 'Johnson Controls', role: 'ERP Consultant',
+        'Infrastructure reliability: guaranteed production availability for the Events store and GCNS notification systems; ran incident response and proactive maintenance',
+        'Performance: spearheaded migration of core applications to Python 3.10 and deprecated legacy code, significantly reducing load and response times',
+        'Tooling & analytics: built a Vendor Recommendation dashboard in PowerBI and shipped fixes to the reliability dashboard' ] },
+    { ts: 'Jan 2022 → Jun 2022', dur: '5 mos', level: 'INFO', company: 'Johnson Controls', role: 'ERP Consultant',
       tags: ['fulltime'],
-      msg: 'Enterprise Resource Planning implementations',
+      msg: 'ERP data migration to Oracle Fusion',
       details: [
-        'Implemented and configured ERP systems for enterprise clients',
-        'Worked with Informatica Cloud, MySQL and stakeholders on delivery' ] },
-    { ts: '2021', dur: '6 mos', level: 'DEBUG', company: 'Vaave', role: 'Product Development Intern',
-      tags: ['internship'], msg: 'Product development on the Vaave platform',
-      details: ['Contributed to product features and platform development'] },
-    { ts: '2021', dur: '5 mos', level: 'DEBUG', company: 'BMSIT&M', role: 'Project Management Intern',
-      tags: ['internship'], msg: 'Project management',
-      details: ['Coordinated project planning and delivery at the institute'] },
-    { ts: '2021', dur: '1 mo', level: 'DEBUG', company: 'Old Dominion University', role: 'R&D Intern',
-      tags: ['internship'], msg: 'Research & development',
-      details: ['Short research and development internship'] },
-    { ts: '2020', dur: '5 mos', level: 'DEBUG', company: 'CoachEd', role: 'Frontend Developer Intern',
-      tags: ['internship'], msg: 'Frontend development with React.js',
-      details: ['Built user-facing features with React.js'] },
-    { ts: '2020', dur: '2 mos', level: 'DEBUG', company: 'Finera', role: 'Graphic Designer Intern',
-      tags: ['internship'], msg: 'Graphic design',
-      details: ['Produced graphic design and branding assets'] },
-    { ts: '2019', dur: '8 mos', level: 'DEBUG', company: 'Vaave', role: 'Alumni Relations Intern',
-      tags: ['internship'], msg: 'Alumni relations',
-      details: ['Supported alumni engagement and relationship building'] },
+        'Data migration: built pipelines with Informatica Intelligent Cloud Services and Azure Data Factory to migrate enterprise data into Oracle Fusion',
+        'Collaboration: partnered with the Infosys team to validate data mappings and ensure timely, well-documented delivery',
+        'Knowledge sharing: ran training sessions to drive adoption of newly introduced tooling' ] },
+    { ts: 'Sep 2021 → Mar 2022', dur: '6 mos', level: 'DEBUG', company: 'Vaave', role: 'Product Development Intern',
+      tags: ['internship'],
+      msg: 'Full-stack product development & PDF reporting',
+      details: [
+        'Full-stack: built an internal success-tracker application and supported hosted apps with new functional requirements',
+        'Feature engineering: engineered dynamic reporting that auto-generates and exports complex business reports as PDF documents' ] },
   ];
 
   const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -528,4 +516,42 @@
       return `<div class="histo-bar" style="height:${h}%;background:linear-gradient(180deg, ${c}, ${c}22)" title="${e.company} · ${e.role} · ${e.dur}"></div>`;
     }).join('');
   }
+})();
+
+/* =========================================================
+   Impact stats: count-up on scroll
+   ========================================================= */
+(() => {
+  'use strict';
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wrap = document.getElementById('impact');
+  if (!wrap) return;
+
+  const fmt = (v, dec, prefix, suffix) =>
+    `${prefix}${dec ? v.toFixed(dec) : Math.round(v).toLocaleString('en-US')}${suffix}`;
+
+  const run = (el) => {
+    const target = parseFloat(el.dataset.target);
+    const dec = parseInt(el.dataset.dec || '0', 10);
+    const prefix = el.dataset.prefix || '';
+    const suffix = el.dataset.suffix || '';
+    const out = el.querySelector('.stat-val');
+    if (reduced) { out.textContent = fmt(target, dec, prefix, suffix); return; }
+    const dur = 1400, t0 = performance.now();
+    const ease = (t) => 1 - Math.pow(1 - t, 3);
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / dur);
+      out.textContent = fmt(target * ease(p), dec, prefix, suffix);
+      if (p < 1) requestAnimationFrame(step);
+      else out.textContent = fmt(target, dec, prefix, suffix);
+    };
+    requestAnimationFrame(step);
+  };
+
+  const stats = [...wrap.querySelectorAll('.stat')];
+  if (reduced || !('IntersectionObserver' in window)) { stats.forEach(run); return; }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { run(e.target); io.unobserve(e.target); } });
+  }, { threshold: 0.4 });
+  stats.forEach((s) => io.observe(s));
 })();

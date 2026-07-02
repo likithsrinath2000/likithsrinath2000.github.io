@@ -537,7 +537,7 @@ main, .footer { position: relative; z-index: 2; }
   transition: max-height 0.35s ease, padding 0.35s ease;
   padding: 0 0 0 132px;
 }
-.log-row.open .lr-details { max-height: 260px; padding-top: 12px; padding-bottom: 6px; }
+.log-row.open .lr-details { max-height: 640px; padding-top: 12px; padding-bottom: 6px; }
 .lr-details ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .lr-details li { color: var(--muted); font-size: 0.82rem; position: relative; padding-left: 16px; }
 .lr-details li::before { content: '→'; position: absolute; left: 0; color: var(--accent); }
@@ -566,3 +566,53 @@ main, .footer { position: relative; z-index: 2; }
   .lr-details { padding-left: 0; }
   .log-row.open .lr-details { padding-left: 0; }
 }
+
+/* =========================================================
+   Impact stats
+   ========================================================= */
+.impact {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.stat {
+  padding: 20px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, border-color 0.25s;
+}
+.stat::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+}
+.stat:hover { transform: translateY(-4px); border-color: rgba(56,225,255,0.4); }
+.stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.1;
+  letter-spacing: -1px;
+}
+.stat-label {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.stat-note {
+  display: block;
+  margin-top: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  color: var(--quiet);
+}
+
+@media (max-width: 900px) { .impact { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) { .impact { grid-template-columns: repeat(2, 1fr); } }
