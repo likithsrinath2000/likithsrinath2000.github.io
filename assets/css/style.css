@@ -753,3 +753,12 @@ main, .footer { position: relative; z-index: 2; }
   .pub-card { flex-direction: column; gap: 12px; }
   .pub-side { flex-direction: row; align-items: center; width: 100%; text-align: left; gap: 14px; }
 }
+
+/* subtle award note */
+.cert-note {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(120,150,200,0.06);
+  font-size: 0.82rem;
+  color: var(--quiet);
+}
