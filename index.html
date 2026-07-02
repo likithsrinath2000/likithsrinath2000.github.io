@@ -35,7 +35,7 @@
       <a href="#experience">Experience</a>
       <a href="#focus">Focus</a>
       <a href="#stack">Stack</a>
-      <a href="#work">Work</a>
+      <a href="#work">Traces</a>
       <a href="#publications">Publications</a>
       <a href="#community">Community</a>
       <a href="#contact" class="nav-cta">Contact</a>
@@ -72,11 +72,14 @@
       <!-- Live pipeline visualization -->
       <div class="pipeline-wrap" aria-hidden="true">
         <canvas id="pipeline"></canvas>
-        <div class="pipeline-label">event pipeline · live</div>
+        <div class="pipeline-label">event pipeline · demo</div>
       </div>
 
-      <!-- Live throughput ticker -->
+      <!-- Simulated throughput ticker (NOT real metrics) -->
       <div class="metrics-bar" aria-hidden="true">
+        <div class="metrics-flag" title="These figures are randomly generated for illustration only.">
+          <span class="mf-dot"></span> simulated · not real metrics
+        </div>
         <div class="metric"><span class="m-label">ingest</span><span class="m-val" id="m-ingest">0</span><span class="m-unit">events/s</span></div>
         <div class="metric"><span class="m-label">p99 latency</span><span class="m-val" id="m-latency">0</span><span class="m-unit">ms</span></div>
         <div class="metric"><span class="m-label">log volume</span><span class="m-val" id="m-volume">0</span><span class="m-unit">GB/day</span></div>
@@ -259,7 +262,7 @@
     <section id="work" class="section">
       <div class="section-head">
         <span class="section-index">05</span>
-        <h2>Selected work</h2>
+        <h2>Traces <span class="head-sub">// sampled work, spans from past projects</span></h2>
       </div>
       <div class="work-grid" id="work-grid"></div>
       <p class="work-more">

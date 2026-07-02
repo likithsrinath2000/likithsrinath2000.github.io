@@ -762,3 +762,26 @@ main, .footer { position: relative; z-index: 2; }
   font-size: 0.82rem;
   color: var(--quiet);
 }
+
+/* "not real metrics" flag on the simulated ticker */
+.metrics-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--warn);
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.28);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  z-index: 1;
+}
+.mf-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--warn);
+  flex: none;
+}
