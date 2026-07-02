@@ -49,12 +49,21 @@
     const canvas = $('log-stream');
     if (!canvas || reduced) return;
     let ctx, w, h, cols, drops;
+    // level key + probability; colors resolved per-theme at draw time
     const LEVELS = [
-      { t: 'INFO ', c: '#4ade80', p: 0.62 },
-      { t: 'DEBUG', c: '#38bdf8', p: 0.2 },
-      { t: 'WARN ', c: '#fbbf24', p: 0.13 },
-      { t: 'ERROR', c: '#f87171', p: 0.05 },
+      { t: 'INFO ', k: 0, p: 0.62 },
+      { t: 'DEBUG', k: 1, p: 0.2 },
+      { t: 'WARN ', k: 2, p: 0.13 },
+      { t: 'ERROR', k: 3, p: 0.05 },
     ];
+    const PALETTE = {
+      dark:  ['#4ade80', '#38bdf8', '#fbbf24', '#f87171'],
+      light: ['#157a3c', '#0369a1', '#a86a00', '#c0392b'],
+    };
+    let theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    window.addEventListener('themechange', () => {
+      theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    });
     const SVC = ['auth', 'ingest', 'router', 'query', 'kafka', 'index', 'api-gw', 'cache'];
     const MSG = ['request handled', 'flush batch', 'ack offset', 'retry backoff',
       'gc pause', 'shard rebalance', 'span exported', 'rate limited',
@@ -68,7 +77,7 @@
     const line = () => {
       const l = pickLevel();
       const ts = new Date().toISOString().slice(11, 23);
-      return { c: l.c, s: `${ts} ${l.t} [${rnd(SVC)}] ${rnd(MSG)}` };
+      return { k: l.k, s: `${ts} ${l.t} [${rnd(SVC)}] ${rnd(MSG)}` };
     };
     const setup = () => {
       const d = fit(canvas); ctx = d.ctx; w = d.w; h = d.h;
@@ -101,7 +110,7 @@
           if (yy < -col.fontH || yy > h + col.fontH) continue;
           const fade = 1 - Math.abs(yy - h * 0.5) / (h * 0.7);
           ctx.globalAlpha = Math.max(0.08, Math.min(0.9, fade));
-          ctx.fillStyle = col.lines[k].c;
+          ctx.fillStyle = PALETTE[theme][col.lines[k].k];
           ctx.fillText(col.lines[k].s, col.x, yy);
         }
       }
@@ -384,15 +393,52 @@
     grid.innerHTML = curated.map(card).join('');
   })();
 
-  /* ---------- Scroll reveal ---------- */
+  /* ---------- Scroll reveal (staggered, fluid) ---------- */
   (() => {
-    const targets = document.querySelectorAll('.section, .card, .work-card, .about-grid');
-    if (reduced || !('IntersectionObserver' in window)) { targets.forEach((t) => t.classList.add('in')); return; }
-    targets.forEach((t) => t.classList.add('reveal'));
+    if (reduced || !('IntersectionObserver' in window)) {
+      document.querySelectorAll('.reveal').forEach((t) => t.classList.add('in'));
+      return;
+    }
+    // solo elements that reveal as one unit
+    const solo = ['.hero-inner', '.pipeline-wrap', '.metrics-bar', '.section-head',
+      '.about-copy', '.timeline', '.explorer', '.edu-strip', '.contact-copy', '.contact-links'];
+    document.querySelectorAll(solo.join(',')).forEach((el) => el.classList.add('reveal'));
+
+    // grids whose children cascade in with a stagger
+    const groups = ['.impact', '.cards', '.stack-grid', '.work-grid', '.pub-list', '.beyond-grid'];
+    groups.forEach((sel) => {
+      document.querySelectorAll(sel).forEach((g) => {
+        [...g.children].forEach((c, i) => {
+          c.classList.add('reveal');
+          c.style.transitionDelay = `${(i % 8) * 70}ms`;
+        });
+      });
+    });
+
     const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { threshold: 0.12 });
-    targets.forEach((t) => io.observe(t));
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.reveal').forEach((t) => io.observe(t));
+  })();
+
+  /* ---------- Hero parallax ---------- */
+  (() => {
+    if (reduced) return;
+    const grid = document.querySelector('.hero-grid');
+    if (!grid) return;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (y < 1000) grid.style.transform = `translateY(${y * 0.18}px)`;
+        ticking = false;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
   })();
 })();
 
